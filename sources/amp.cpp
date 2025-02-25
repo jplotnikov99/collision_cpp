@@ -34,8 +34,7 @@ double CollisionInt::feq(const double &x, const double &s) {
 }
 
 double CollisionInt::Pf(const double &pz3) {
-    return feq(E1 / T, 1.) * feq(E2 / T, -1.) * (1. - feq(E3 / T, 1.)) *
-           (1 + feq(E4 / T, -1.));
+    return feq(E1, 1.) * feq(E2, -1.) * (1. - feq(E3, 1.)) * (1 + feq(E4, -1.));
 }
 
 double CollisionInt::DR(const double &pz3) {

@@ -40,14 +40,14 @@
 #define LDXGIVEN NDIM
 #define NEXTRA 0
 
-const double T = 100;
-const double mH = sqrt(11. / 6.) * el / sW * T;
-const double mt = gs * T / sqrt(6);
-const double mg = sqrt(2) * gs * T;
+double T = 100;
+double mH = sqrt(11. / 6.) * el / sW * T;
+double mt = gs * T / sqrt(6);
+double mg = sqrt(2) * gs * T;
 
 static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
                      cubareal ff[], void *userdata) {
-    IntMonte Im(mt, mH, mt, mg);
+    IntMonte Im(mt, mH, mt, mg, T);
     double po1 = (1 - xx[0]) / xx[0];
     double ph1 = xx[1] * 2 * M_PI;
     double pz1 = (1 - xx[2]) / xx[2];
@@ -57,7 +57,8 @@ static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
     double ph3 = xx[6] * 2 * M_PI;
     double jacobian = SQR(2 * M_PI) * 2 * M_PI /
                       (SQR(xx[0]) * SQR(xx[2]) * SQR(xx[3]) * SQR(xx[5]));
-    ff[0] = (Im(po1, ph1, pz1, po2, ph2, pz2, ph3) +
+    ff[0] = T * T * T * T *
+            (Im(po1, ph1, pz1, po2, ph2, pz2, ph3) +
              Im(po1, ph1, pz1, po2, ph2, -pz2, ph3) +
              Im(po1, ph1, -pz1, po2, ph2, pz2, ph3) +
              Im(po1, ph1, -pz1, po2, ph2, -pz2, ph3)) *
@@ -65,15 +66,6 @@ static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
 
     return 0;
 }
-
-// BENCHMARK KINEMATICS
-static double po1 = 0.0957420393030742;
-static double ph1 = 3.308298445140734;
-static double pz1 = 0.0019461535323972434;
-static double po2 = 0.07809375969212062;
-static double ph2 = 4.233660395861847;
-static double pz2 = 0.009562805013332953;
-static double ph3 = 0.8607512110484707;
 
 void warm_up_vegas(integrand_t integrand, int points, int iterations, int phase,
                    cubareal integral[], cubareal error[], cubareal prob[]) {
@@ -101,19 +93,27 @@ void gridded_vegas(integrand_t integrand, int points, int iterations, int phase,
 
 int main() {
     using namespace std::chrono;
+
     int comp, nregions, neval, fail;
     cubareal integral[NCOMP], error[NCOMP], prob[NCOMP];
-    std::ofstream outfile("vegas_warmup_1e3_1e5_2.dat",
-                          std::ios::out | std::ios::app);
+    std::ofstream outfile("T_dependence_2.dat", std::ios::out | std::ios::app);
     auto start = high_resolution_clock::now();
+    // for (double i = 0; i < 100; i++) {
+    T = 100;
+    mH = sqrt(11. / 6.) * el / sW;
+    mt = gs / sqrt(6);
+    mg = sqrt(2) * gs;
     warm_up_vegas(Integrand, 1e4, 20, -1, integral, error, prob);
     gridded_vegas(Integrand, 1e5, 5, 1, integral, error, prob);
     for (size_t i = 0; i < NCOMP; i++) {
-        outfile << integral[i] << "\t" << error[i] << "\t";
+        outfile << 3. * integral[i] / (2. * SQR(M_PI) * pow(T, 4)) << "\t"
+                << error[i] << "\n";
     }
+    //}
+
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(stop - start);
-    outfile << duration.count() << "\n";
+    //outfile << duration.count() << "\n";
     std::cout << "Computation time:\n" << duration.count() << "ms" << std::endl;
 
     //}
