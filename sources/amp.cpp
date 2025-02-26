@@ -52,7 +52,6 @@ void CollisionInt::pz3sol() {
     const double den = 2. * (c * c - d * d);
     const double num1 = -c * (a - b - c * c + d * d);
     const double num2 = d * sqrt(SQR(a - b + c * c - d * d) + 2. * b * den);
-
     pz31 = (num1 + num2) / den;
     pz32 = (num1 - num2) / den;
 }
@@ -99,21 +98,21 @@ double CollisionInt::amp(const double &pz3) {
         2. * (E1 * E2 - po1 * po2 * cos12 - pz1 * pz2) + m1 * m1 + m2 * m2;
     const double t =
         -2. * (E1 * E3 - po1 * po3 * cos13 - pz1 * pz3) + m1 * m1 + m1 * m1;
-    return ((4 * (el * el) * (gs * gs) * (mt_pole * mt_pole) *
-             (2 * (s - (m1 * m1)) * (-t + (m1 * m1)) * (m2 * m2 * m2 * m2) +
-              (m2 * m2) * (2 * s * t * (s + t) +
-                           2 * (m1 * m1) *
-                               (2 * s * t - (s + t) * (m4 * m4) +
-                                (m1 * m1) * (-5 * (s + t) + 6 * (m1 * m1) +
-                                             (m4 * m4))) +
-                           (m4 * m4) * ((s * s) + (t * t))) -
-              (s + t - 2 * (m1 * m1)) *
-                  (s * t * (s + t) - 10 * (m1 * m1 * m1 * m1 * m1 * m1) +
-                   (m1 * m1 * m1 * m1) * (3 * (s + t) - 8 * (m4 * m4)) -
-                   (m1 * m1) * (-4 * s * t - 4 * (s + t) * (m4 * m4) + (s * s) +
-                                (t * t))))) /
-            (3. * (mW * mW) * ((-(m1 * m1) + s) * (-(m1 * m1) + s)) *
-             (sW * sW) * ((-(m1 * m1) + t) * (-(m1 * m1) + t))));
+    return 4 * el * el * gs * gs * mt_pole * mt_pole *
+           (2 * (s - m1 * m1) * (-t + m1 * m1) * m2 * m2 * m2 * m2 +
+            m2 * m2 *
+                (2 * s * t * (s + t) +
+                 2 * m1 * m1 *
+                     (2 * s * t - (s + t) * m4 * m4 +
+                      m1 * m1 * (-5 * (s + t) + 6 * m1 * m1 + m4 * m4)) +
+                 m4 * m4 * (s * s + t * t)) -
+            (s + t - 2 * m1 * m1) *
+                (s * t * (s + t) - 10 * m1 * m1 * m1 * m1 * m1 * m1 +
+                 m1 * m1 * m1 * m1 * (3 * (s + t) - 8 * m4 * m4) -
+                 m1 * m1 *
+                     (-4 * s * t - 4 * (s + t) * m4 * m4 + s * s + t * t))) /
+           (3. * mW * mW * (-m1 * m1 + s) * (-m1 * m1 + s) * sW * sW *
+            (-m1 * m1 + t) * (-m1 * m1 + t));
 }
 
 double CollisionInt::operator()(const double &po33) {
@@ -124,13 +123,18 @@ double CollisionInt::operator()(const double &po33) {
     p4y = po1 * sin(ph1) + po2 * sin(ph2) - po3 * sin(ph3);
     pz3sol();
     E3 = En(po3, pz31, m1);
-    E4 = E1 + E2 - E3;
-    res += lips(po1, E1) * lips(po2, E2) * lips(po3, E3) * lips(1., E4) *
-           SQR(SQR(2 * M_PI)) / std::abs(DR(pz31)) * amp(pz31) * Pf(pz31);
+    E4 = sqrt(m4 * m4 + p4x * p4x + p4y * p4y + SQR(pz1 + pz2 - pz31));
+    if (std::abs(E1 + E2 - E3 - E4) < E1 * 1e-8)
+        res += lips(po1, E1) * lips(po2, E2) * lips(po3, E3) * lips(1., E4) *
+               SQR(SQR(2 * M_PI)) / std::abs(DR(pz31)) * amp(pz31) * Pf(pz31);
     E3 = En(po3, pz32, m1);
-    E4 = E1 + E2 - E3;
-    res += lips(po1, E1) * lips(po2, E2) * lips(po3, E3) * lips(1., E4) *
-           SQR(SQR(2 * M_PI)) / std::abs(DR(pz32)) * amp(pz32) * Pf(pz32);
+    E4 = sqrt(m4 * m4 + p4x * p4x + p4y * p4y + SQR(pz1 + pz2 - pz32));
+    if (std::abs(E1 + E2 - E3 - E4) < E1 * 1e-8)
+        res += lips(po1, E1) * lips(po2, E2) * lips(po3, E3) * lips(1., E4) *
+               SQR(SQR(2 * M_PI)) / std::abs(DR(pz32)) * amp(pz32) * Pf(pz32);
+    if (res < 0) {
+        res = 0;
+    }
     return res;
 }
 

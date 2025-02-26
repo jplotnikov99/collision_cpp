@@ -9,7 +9,6 @@
 
 class CollisionInt {
    private:
-    const double T;
     const double m1, m2, m3, m4;
     double cos12;
     double cos13;
@@ -20,8 +19,8 @@ class CollisionInt {
 
    public:
     CollisionInt(const double &m11, const double &m22, const double &m33,
-                 const double &m44, const double &TT)
-        : m1(m11), m2(m22), m3(m33), m4(m44), T(TT) {};
+                 const double &m44)
+        : m1(m11), m2(m22), m3(m33), m4(m44) {};
     void set_phase_space(const double &po11, const double &ph11,
                          const double &pz11, const double &po22,
                          const double &ph22, const double &pz22,
@@ -44,8 +43,8 @@ class IntMonte {
 
    public:
     IntMonte(const double &m1, const double &m2, const double &m3,
-             const double &m4, const double &TT)
-        : Col(m1, m2, m3, m4, TT) {};
+             const double &m4)
+        : Col(m1, m2, m3, m4) {};
     double operator()(const double &po11, const double &ph11,
                       const double &pz11, const double &po22,
                       const double &ph22, const double &pz22,

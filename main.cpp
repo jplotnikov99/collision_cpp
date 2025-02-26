@@ -1,5 +1,6 @@
 #include <chrono>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 
 #include "cuba.h"
@@ -47,7 +48,7 @@ double mg = sqrt(2) * gs * T;
 
 static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
                      cubareal ff[], void *userdata) {
-    IntMonte Im(mt, mH, mt, mg, T);
+    IntMonte Im(mt, mH, mt, mg);
     double po1 = (1 - xx[0]) / xx[0];
     double ph1 = xx[1] * 2 * M_PI;
     double pz1 = (1 - xx[2]) / xx[2];
@@ -63,6 +64,12 @@ static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
              Im(po1, ph1, -pz1, po2, ph2, pz2, ph3) +
              Im(po1, ph1, -pz1, po2, ph2, -pz2, ph3)) *
             jacobian;
+    if (ff[0] < 0) {
+        std::cout << ff[0] << "\n";
+        std::cout << po1 << "\t" << ph1 << "\t" << pz1 << "\t" << po2 << "\t"
+                  << ph2 << "\t" << pz2 << "\t" << ph3 << "\n";
+        exit(1);
+    }
 
     return 0;
 }
@@ -93,27 +100,28 @@ void gridded_vegas(integrand_t integrand, int points, int iterations, int phase,
 
 int main() {
     using namespace std::chrono;
+    // int ncores = 1, pcores = 1e4;
+    // cubacores(&ncores, &pcores);
 
     int comp, nregions, neval, fail;
     cubareal integral[NCOMP], error[NCOMP], prob[NCOMP];
-    std::ofstream outfile("T_dependence_2.dat", std::ios::out | std::ios::app);
+    std::ofstream outfile("garbage.dat", std::ios::out | std::ios::app);
     auto start = high_resolution_clock::now();
-    // for (double i = 0; i < 100; i++) {
     T = 100;
-    mH = sqrt(11. / 6.) * el / sW;
-    mt = gs / sqrt(6);
-    mg = sqrt(2) * gs;
+    mH = sqrt(11. / 6.) * el / sW / 10.;
+    mt = gs / sqrt(6.);
+    mg = sqrt(2.) * gs;
     warm_up_vegas(Integrand, 1e4, 20, -1, integral, error, prob);
     gridded_vegas(Integrand, 1e5, 5, 1, integral, error, prob);
     for (size_t i = 0; i < NCOMP; i++) {
-        outfile << 3. * integral[i] / (2. * SQR(M_PI) * pow(T, 4)) << "\t"
+        outfile << mH * T << "\t"
+                << 3. * integral[i] / (2. * SQR(M_PI) * pow(T, 4)) << "\t"
                 << error[i] << "\n";
     }
-    //}
 
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(stop - start);
-    //outfile << duration.count() << "\n";
+    // outfile << duration.count() << "\n";
     std::cout << "Computation time:\n" << duration.count() << "ms" << std::endl;
 
     //}
