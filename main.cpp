@@ -8,7 +8,7 @@
 #include "include/ampmassless.hpp"
 #include "include/constants.hpp"
 
-#define NDIM 7
+#define NDIM 8
 #define NCOMP 1
 #define USERDATA NULL
 #define NVEC 1
@@ -47,9 +47,9 @@ double mH = sqrt(11. / 6.) * el / sW * T;
 double mt = gs * T / sqrt(6);
 double mg = sqrt(2) * gs * T;
 
-static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
+/* static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
                      cubareal ff[], void *userdata) {
-    IntMonteM0 Im;
+    IntMonte Im(0., 0., 0., 0.);
     double po1 = (1 - xx[0]) / xx[0];
     double ph1 = xx[1] * 2 * M_PI;
     double pz1 = (1 - xx[2]) / xx[2];
@@ -69,6 +69,30 @@ static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
         std::cout << ff[0] << "\n";
         std::cout << po1 << "\t" << ph1 << "\t" << pz1 << "\t" << po2 << "\t"
                   << ph2 << "\t" << pz2 << "\t" << ph3 << "\n";
+        exit(1);
+    }
+
+    return 0;
+} */
+static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
+                     cubareal ff[], void *userdata) {
+    CollisionIntM0 col;
+    double p1 = (1 - xx[0]) / xx[0];
+    double ph1 = xx[1] * 2 * M_PI;
+    double th1 = xx[2] * M_PI;
+    double p2 = (1 - xx[3]) / xx[3];
+    double ph2 = xx[4] * 2 * M_PI;
+    double th2 = xx[5] * M_PI;
+    double ph3 = xx[6] * 2 * M_PI;
+    double th3 = xx[7] * M_PI;
+    double jacobian =
+        pow(2 * M_PI, 3) * pow(M_PI, 3) / (SQR(xx[0]) * SQR(xx[3]));
+    ff[0] =
+        T * T * T * T * col(p1, ph1, th1, p2, ph2, th2, ph3, th3) * jacobian;
+    if (ff[0] < 0) {
+        std::cout << ff[0] << "\n";
+        std::cout << p1 << "\t" << ph1 << "\t" << th1 << "\t" << p2 << "\t"
+                  << ph2 << "\t" << th2 << "\t" << ph3 << "\t" << th3 << "\n";
         exit(1);
     }
 
@@ -101,8 +125,8 @@ void gridded_vegas(integrand_t integrand, int points, int iterations, int phase,
 
 int main() {
     using namespace std::chrono;
-    // int ncores = 1, pcores = 1e4;
-    // cubacores(&ncores, &pcores);
+    //int ncores = 1, pcores = 1e4;
+    //cubacores(&ncores, &pcores);
 
     int comp, nregions, neval, fail;
     cubareal integral[NCOMP], error[NCOMP], prob[NCOMP];
@@ -112,8 +136,8 @@ int main() {
     mH = sqrt(11. / 6.) * el / sW * 0.;
     mt = gs / sqrt(6.);
     mg = sqrt(2.) * gs * 0.;
-    warm_up_vegas(Integrand, 1e4, 20, -1, integral, error, prob);
-    gridded_vegas(Integrand, 1e5, 10, 1, integral, error, prob);
+    warm_up_vegas(Integrand, 1e6, 20, -1, integral, error, prob);
+    gridded_vegas(Integrand, 1e7, 10, 1, integral, error, prob);
     for (size_t i = 0; i < NCOMP; i++) {
         outfile << mH * T << "\t"
                 << 3. * integral[i] / (2. * SQR(M_PI) * pow(T, 4)) << "\t"
