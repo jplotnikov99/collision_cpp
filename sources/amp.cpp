@@ -94,25 +94,36 @@ void CollisionInt::po3sol(double &zero1, double &zero2) {
 }
 
 double CollisionInt::amp(const double &pz3) {
-    const double s =
-        2. * (E1 * E2 - po1 * po2 * cos12 - pz1 * pz2) + m1 * m1 + m2 * m2;
-    const double t =
-        -2. * (E1 * E3 - po1 * po3 * cos13 - pz1 * pz3) + m1 * m1 + m1 * m1;
-    return 4 * el * el * gs * gs * mt_pole * mt_pole *
-           (2 * (s - m1 * m1) * (-t + m1 * m1) * m2 * m2 * m2 * m2 +
-            m2 * m2 *
-                (2 * s * t * (s + t) +
-                 2 * m1 * m1 *
-                     (2 * s * t - (s + t) * m4 * m4 +
-                      m1 * m1 * (-5 * (s + t) + 6 * m1 * m1 + m4 * m4)) +
-                 m4 * m4 * (s * s + t * t)) -
-            (s + t - 2 * m1 * m1) *
-                (s * t * (s + t) - 10 * m1 * m1 * m1 * m1 * m1 * m1 +
-                 m1 * m1 * m1 * m1 * (3 * (s + t) - 8 * m4 * m4) -
-                 m1 * m1 *
-                     (-4 * s * t - 4 * (s + t) * m4 * m4 + s * s + t * t))) /
-           (3. * mW * mW * (-m1 * m1 + s) * (-m1 * m1 + s) * sW * sW *
-            (-m1 * m1 + t) * (-m1 * m1 + t));
+    if (massive) {
+        const double s =
+            2. * (E1 * E2 - po1 * po2 * cos12 - pz1 * pz2) + m1 * m1 + m2 * m2;
+        const double t =
+            -2. * (E1 * E3 - po1 * po3 * cos13 - pz1 * pz3) + m1 * m1 + m1 * m1;
+        return 4 * el * el * gs * gs * mt_pole * mt_pole *
+               (2 * (s - m1 * m1) * (-t + m1 * m1) * m2 * m2 * m2 * m2 +
+                m2 * m2 *
+                    (2 * s * t * (s + t) +
+                     2 * m1 * m1 *
+                         (2 * s * t - (s + t) * m4 * m4 +
+                          m1 * m1 * (-5 * (s + t) + 6 * m1 * m1 + m4 * m4)) +
+                     m4 * m4 * (s * s + t * t)) -
+                (s + t - 2 * m1 * m1) *
+                    (s * t * (s + t) - 10 * m1 * m1 * m1 * m1 * m1 * m1 +
+                     m1 * m1 * m1 * m1 * (3 * (s + t) - 8 * m4 * m4) -
+                     m1 * m1 *
+                         (-4 * s * t - 4 * (s + t) * m4 * m4 + s * s +
+                          t * t))) /
+               (3. * mW * mW * (-m1 * m1 + s) * (-m1 * m1 + s) * sW * sW *
+                (-m1 * m1 + t) * (-m1 * m1 + t));
+    } else {
+        const double s = 2. * (E1 * E2 - po1 * po2 * cos12 - pz1 * pz2);
+        const double t = -2. * (E1 * E3 - po1 * po3 * cos13 - pz1 * pz3);
+        return -4 * el * el * gs * gs * mt_pole * mt_pole *
+               (-(s + t) * (s + 2 * t) * mtinf * mtinf +
+                t * mtinf * mtinf * mtinf * mtinf + t * (s + t) * (s + t)) /
+               (3. * s * mW * mW * sW * sW *
+                ((mtinf * mtinf - t) * (mtinf * mtinf - t)));
+    }
 }
 
 double CollisionInt::operator()(const double &po33) {
@@ -127,14 +138,14 @@ double CollisionInt::operator()(const double &po33) {
     if (std::abs(E1 + E2 - E3 - E4) < E1 * 1e-8)
         res += lips(po1, E1) * lips(po2, E2) * lips(po3, E3) * lips(1., E4) *
                SQR(SQR(2 * M_PI)) / std::abs(DR(pz31)) * amp(pz31) * Pf(pz31);
+    if (res < 0) return 0.;
     E3 = En(po3, pz32, m1);
     E4 = sqrt(m4 * m4 + p4x * p4x + p4y * p4y + SQR(pz1 + pz2 - pz32));
     if (std::abs(E1 + E2 - E3 - E4) < E1 * 1e-8)
         res += lips(po1, E1) * lips(po2, E2) * lips(po3, E3) * lips(1., E4) *
                SQR(SQR(2 * M_PI)) / std::abs(DR(pz32)) * amp(pz32) * Pf(pz32);
-    if (res < 0) {
-        res = 0;
-    }
+    if (res < 0) return 0.;
+
     return res;
 }
 

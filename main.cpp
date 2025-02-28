@@ -5,6 +5,7 @@
 
 #include "cuba.h"
 #include "include/amp.hpp"
+#include "include/ampmassless.hpp"
 #include "include/constants.hpp"
 
 #define NDIM 7
@@ -48,7 +49,7 @@ double mg = sqrt(2) * gs * T;
 
 static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
                      cubareal ff[], void *userdata) {
-    IntMonte Im(mt, mH, mt, mg);
+    IntMonteM0 Im;
     double po1 = (1 - xx[0]) / xx[0];
     double ph1 = xx[1] * 2 * M_PI;
     double pz1 = (1 - xx[2]) / xx[2];
@@ -108,11 +109,11 @@ int main() {
     std::ofstream outfile("garbage.dat", std::ios::out | std::ios::app);
     auto start = high_resolution_clock::now();
     T = 100;
-    mH = sqrt(11. / 6.) * el / sW / 10.;
+    mH = sqrt(11. / 6.) * el / sW * 0.;
     mt = gs / sqrt(6.);
-    mg = sqrt(2.) * gs;
+    mg = sqrt(2.) * gs * 0.;
     warm_up_vegas(Integrand, 1e4, 20, -1, integral, error, prob);
-    gridded_vegas(Integrand, 1e5, 5, 1, integral, error, prob);
+    gridded_vegas(Integrand, 1e5, 10, 1, integral, error, prob);
     for (size_t i = 0; i < NCOMP; i++) {
         outfile << mH * T << "\t"
                 << 3. * integral[i] / (2. * SQR(M_PI) * pow(T, 4)) << "\t"
