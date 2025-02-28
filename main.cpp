@@ -49,7 +49,7 @@ double mg = sqrt(2) * gs * T;
 
 static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
                      cubareal ff[], void *userdata) {
-    IntMonte Im(0., 0., 0., 0.);
+    IntMonte Im(mt, mH, mt, mg);
     double po1 = (1 - xx[0]) / xx[0];
     double ph1 = xx[1] * 2 * M_PI;
     double pz1 = (1 - xx[2]) / xx[2];
@@ -99,7 +99,7 @@ static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
     return 0;
 } */
 
-void warm_up_vegas(integrand_t integrand, int points, int iterations, int phase,
+void warm_up_vegas(integrand_t integrand, int points, int iterations, int gridno,
                    cubareal integral[], cubareal error[], cubareal prob[]) {
     int last_only = 1, smoothing = 1;
     int comp, nregions, neval, fail;
@@ -107,11 +107,11 @@ void warm_up_vegas(integrand_t integrand, int points, int iterations, int phase,
     int cuba_flags = VERBOSE + last_only * 4 + smoothing * 8;
     // char *state = "my_state";
     Vegas(NDIM, NCOMP, Integrand, USERDATA, NVEC, EPSREL, EPSABS, cuba_flags,
-          SEED, MINEVAL, maxpoints, points, NINCREASE, NBATCH, phase, STATEFILE,
+          SEED, MINEVAL, maxpoints, points, NINCREASE, NBATCH, gridno, STATEFILE,
           SPIN, &neval, &fail, integral, error, prob);
 }
 
-void gridded_vegas(integrand_t integrand, int points, int iterations, int phase,
+void gridded_vegas(integrand_t integrand, int points, int iterations, int gridno,
                    cubareal integral[], cubareal error[], cubareal prob[]) {
     int last_only = 0, smoothing = 1;
     int comp, nregions, neval, fail;
@@ -119,7 +119,7 @@ void gridded_vegas(integrand_t integrand, int points, int iterations, int phase,
     int cuba_flags = VERBOSE + last_only * 4 + smoothing * 8;
     // char *state = "my_state";
     Vegas(NDIM, NCOMP, Integrand, USERDATA, NVEC, EPSREL, EPSABS, cuba_flags,
-          SEED, MINEVAL, maxpoints, points, NINCREASE, NBATCH, phase, STATEFILE,
+          SEED, MINEVAL, maxpoints, points, NINCREASE, NBATCH, gridno, STATEFILE,
           SPIN, &neval, &fail, integral, error, prob);
 }
 
@@ -133,9 +133,9 @@ int main() {
     std::ofstream outfile("garbage.dat", std::ios::out | std::ios::app);
     auto start = high_resolution_clock::now();
     T = 100;
-    mH = sqrt(11. / 6.) * el / sW * 0.;
+    mH = sqrt(11. / 6.) * el / sW;
     mt = gs / sqrt(6.);
-    mg = sqrt(2.) * gs * 0.;
+    mg = sqrt(2.) * gs;
     warm_up_vegas(Integrand, 1e4, 20, -1, integral, error, prob);
     gridded_vegas(Integrand, 1e5, 10, 1, integral, error, prob);
     for (size_t i = 0; i < NCOMP; i++) {
@@ -148,8 +148,6 @@ int main() {
     auto duration = duration_cast<milliseconds>(stop - start);
     // outfile << duration.count() << "\n";
     std::cout << "Computation time:\n" << duration.count() << "ms" << std::endl;
-
-    //}
     outfile.close();
     return 0;
 }
