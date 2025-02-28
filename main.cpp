@@ -8,7 +8,7 @@
 #include "include/ampmassless.hpp"
 #include "include/constants.hpp"
 
-#define NDIM 8
+#define NDIM 7
 #define NCOMP 1
 #define USERDATA NULL
 #define NVEC 1
@@ -47,7 +47,7 @@ double mH = sqrt(11. / 6.) * el / sW * T;
 double mt = gs * T / sqrt(6);
 double mg = sqrt(2) * gs * T;
 
-/* static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
+static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
                      cubareal ff[], void *userdata) {
     IntMonte Im(0., 0., 0., 0.);
     double po1 = (1 - xx[0]) / xx[0];
@@ -73,8 +73,8 @@ double mg = sqrt(2) * gs * T;
     }
 
     return 0;
-} */
-static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
+}
+/* static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
                      cubareal ff[], void *userdata) {
     CollisionIntM0 col;
     double p1 = (1 - xx[0]) / xx[0];
@@ -97,7 +97,7 @@ static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
     }
 
     return 0;
-}
+} */
 
 void warm_up_vegas(integrand_t integrand, int points, int iterations, int phase,
                    cubareal integral[], cubareal error[], cubareal prob[]) {
@@ -125,8 +125,8 @@ void gridded_vegas(integrand_t integrand, int points, int iterations, int phase,
 
 int main() {
     using namespace std::chrono;
-    //int ncores = 1, pcores = 1e4;
-    //cubacores(&ncores, &pcores);
+    // int ncores = 1, pcores = 1e4;
+    // cubacores(&ncores, &pcores);
 
     int comp, nregions, neval, fail;
     cubareal integral[NCOMP], error[NCOMP], prob[NCOMP];
@@ -136,8 +136,8 @@ int main() {
     mH = sqrt(11. / 6.) * el / sW * 0.;
     mt = gs / sqrt(6.);
     mg = sqrt(2.) * gs * 0.;
-    warm_up_vegas(Integrand, 1e6, 20, -1, integral, error, prob);
-    gridded_vegas(Integrand, 1e7, 10, 1, integral, error, prob);
+    warm_up_vegas(Integrand, 1e4, 20, -1, integral, error, prob);
+    gridded_vegas(Integrand, 1e5, 10, 1, integral, error, prob);
     for (size_t i = 0; i < NCOMP; i++) {
         outfile << mH * T << "\t"
                 << 3. * integral[i] / (2. * SQR(M_PI) * pow(T, 4)) << "\t"
