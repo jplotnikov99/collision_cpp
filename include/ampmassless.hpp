@@ -9,7 +9,6 @@
 
 class CollisionIntM0 {
    private:
-    const bool massive = false;
     const double mtinf = gs / sqrt(6.);
     double cos12;
     double cos13;

@@ -8,7 +8,7 @@
 #include "include/ampmassless.hpp"
 #include "include/constants.hpp"
 
-#define NDIM 7
+#define NDIM 8
 #define NCOMP 1
 #define USERDATA NULL
 #define NVEC 1
@@ -47,9 +47,9 @@ double mH = sqrt(11. / 6.) * el / sW * T;
 double mt = gs * T / sqrt(6);
 double mg = sqrt(2) * gs * T;
 
-static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
+/* static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
                      cubareal ff[], void *userdata) {
-    IntMonte Im(mt, mH, mt, mg);
+    IntMonte Im(0., 0., 0., 0.);
     double po1 = (1 - xx[0]) / xx[0];
     double ph1 = xx[1] * 2 * M_PI;
     double pz1 = (1 - xx[2]) / xx[2];
@@ -73,8 +73,8 @@ static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
     }
 
     return 0;
-}
-/* static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
+} */
+static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
                      cubareal ff[], void *userdata) {
     CollisionIntM0 col;
     double p1 = (1 - xx[0]) / xx[0];
@@ -97,36 +97,38 @@ static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
     }
 
     return 0;
-} */
+}
 
-void warm_up_vegas(integrand_t integrand, int points, int iterations, int gridno,
-                   cubareal integral[], cubareal error[], cubareal prob[]) {
+void warm_up_vegas(integrand_t integrand, int points, int iterations,
+                   int gridno, cubareal integral[], cubareal error[],
+                   cubareal prob[]) {
     int last_only = 1, smoothing = 1;
     int comp, nregions, neval, fail;
     int maxpoints = iterations * points;
     int cuba_flags = VERBOSE + last_only * 4 + smoothing * 8;
     // char *state = "my_state";
     Vegas(NDIM, NCOMP, Integrand, USERDATA, NVEC, EPSREL, EPSABS, cuba_flags,
-          SEED, MINEVAL, maxpoints, points, NINCREASE, NBATCH, gridno, STATEFILE,
-          SPIN, &neval, &fail, integral, error, prob);
+          SEED, MINEVAL, maxpoints, points, NINCREASE, NBATCH, gridno,
+          STATEFILE, SPIN, &neval, &fail, integral, error, prob);
 }
 
-void gridded_vegas(integrand_t integrand, int points, int iterations, int gridno,
-                   cubareal integral[], cubareal error[], cubareal prob[]) {
+void gridded_vegas(integrand_t integrand, int points, int iterations,
+                   int gridno, cubareal integral[], cubareal error[],
+                   cubareal prob[]) {
     int last_only = 0, smoothing = 1;
     int comp, nregions, neval, fail;
     int maxpoints = iterations * points;
     int cuba_flags = VERBOSE + last_only * 4 + smoothing * 8;
     // char *state = "my_state";
     Vegas(NDIM, NCOMP, Integrand, USERDATA, NVEC, EPSREL, EPSABS, cuba_flags,
-          SEED, MINEVAL, maxpoints, points, NINCREASE, NBATCH, gridno, STATEFILE,
-          SPIN, &neval, &fail, integral, error, prob);
+          SEED, MINEVAL, maxpoints, points, NINCREASE, NBATCH, gridno,
+          STATEFILE, SPIN, &neval, &fail, integral, error, prob);
 }
 
 int main() {
     using namespace std::chrono;
-    // int ncores = 1, pcores = 1e4;
-    // cubacores(&ncores, &pcores);
+    int ncores = 1, pcores = 1e4;
+    cubacores(&ncores, &pcores);
 
     int comp, nregions, neval, fail;
     cubareal integral[NCOMP], error[NCOMP], prob[NCOMP];
@@ -136,11 +138,10 @@ int main() {
     mH = sqrt(11. / 6.) * el / sW;
     mt = gs / sqrt(6.);
     mg = sqrt(2.) * gs;
-    warm_up_vegas(Integrand, 1e4, 20, -1, integral, error, prob);
-    gridded_vegas(Integrand, 1e5, 10, 1, integral, error, prob);
+    warm_up_vegas(Integrand, 1e4, 20, 1, integral, error, prob);
+    gridded_vegas(Integrand, 1e6, 10, 1, integral, error, prob);
     for (size_t i = 0; i < NCOMP; i++) {
-        outfile << mH * T << "\t"
-                << 3. * integral[i] / (2. * SQR(M_PI) * pow(T, 4)) << "\t"
+        outfile << 3. * integral[i] / (2. * SQR(M_PI) * pow(T, 4)) << "\t"
                 << error[i] << "\n";
     }
 

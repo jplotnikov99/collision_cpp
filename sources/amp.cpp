@@ -94,7 +94,7 @@ void CollisionInt::po3sol(double &zero1, double &zero2) {
 }
 
 double CollisionInt::amp(const double &pz3) {
-    if (massive) {
+    if (joao) {
         const double s =
             2. * (E1 * E2 - po1 * po2 * cos12 - pz1 * pz2) + m1 * m1 + m2 * m2;
         const double t =
@@ -116,13 +116,22 @@ double CollisionInt::amp(const double &pz3) {
                (3. * mW * mW * (-m1 * m1 + s) * (-m1 * m1 + s) * sW * sW *
                 (-m1 * m1 + t) * (-m1 * m1 + t));
     } else {
-        const double s = 2. * (E1 * E2 - po1 * po2 * cos12 - pz1 * pz2);
-        const double t = -2. * (E1 * E3 - po1 * po3 * cos13 - pz1 * pz3);
-        return -4 * el * el * gs * gs * mt_pole * mt_pole *
-               (-(s + t) * (s + 2 * t) * mtinf * mtinf +
-                t * mtinf * mtinf * mtinf * mtinf + t * (s + t) * (s + t)) /
-               (3. * s * mW * mW * sW * sW *
-                ((mtinf * mtinf - t) * (mtinf * mtinf - t)));
+        const double s =
+            2. * (E1 * E2 - po1 * po2 * cos12 - pz1 * pz2) + m1 * m1 + m2 * m2;
+        const double t =
+            -2. * (E1 * E3 - po1 * po3 * cos13 - pz1 * pz3) + m1 * m1 + m1 * m1;
+        return ((el * el) * (gs * gs) * (m1 * m1) *
+                (-(s * t) - (m1 * m1 * m1 * m1) +
+                 (m1 * m1) * (s + t + 2 * (m3 * m3)) +
+                 (m3 * m3) * ((m2 * m2) - 2 * (-s - t + 2 * (m1 * m1) +
+                                               (m2 * m2) + (m3 * m3))) -
+                 (m3 * m3 * m3 * m3)) *
+                (mt_pole * mt_pole) *
+                ((-2 * (m1 * m1) - (m3 * m3) + s + t) *
+                 (-2 * (m1 * m1) - (m3 * m3) + s + t))) /
+               (3. * (m3 * m3) * (mW * mW) *
+                ((-(m1 * m1) + s) * (-(m1 * m1) + s)) * (sW * sW) *
+                ((-(m1 * m1) + t) * (-(m1 * m1) + t)));
     }
 }
 
