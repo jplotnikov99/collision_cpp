@@ -5,7 +5,7 @@ double CollisionIntM0::lips(const double &p, const double &sth) {
 }
 
 double CollisionIntM0::feq(const double &x, const double &s) {
-    if (x > 30)
+    if (x > 0)
         return exp(-x);
     else
         return 1 / (exp(x) + s);
@@ -39,6 +39,6 @@ double CollisionIntM0::operator()(const double &p1, const double &ph1,
     const double p3 = p1 * p2 * (1 - p1p2n) / F;
     const double p4 = p1 + p2 - p3;
     res = lips(p1, s1) * lips(p2, s2) * lips(p3, s3) * 2 * M_PI /
-          std::abs(2. * F) * amp(p1, p2, p3) * Pf(p1, p2, p3, p4);
+          std::abs(2. * F) * /* amp(p1, p2, p3) * */ Pf(p1, p2, p3, p4);
     return res;
 }

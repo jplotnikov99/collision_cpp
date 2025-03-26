@@ -141,7 +141,8 @@ int main() {
     warm_up_vegas(Integrand, 1e4, 20, 1, integral, error, prob);
     gridded_vegas(Integrand, 1e6, 10, 1, integral, error, prob);
     for (size_t i = 0; i < NCOMP; i++) {
-        outfile << 3. * integral[i] / (2. * SQR(M_PI) * M_PI * pow(T, 4))
+        outfile << 3. * integral[i] / (2. * SQR(M_PI) * M_PI * pow(T, 4)) *
+                       pow(2 * M_PI, 3)
                 << "\t" << error[i] << "\n";
     }
 
