@@ -127,23 +127,31 @@ void gridded_vegas(integrand_t integrand, int points, int iterations,
 
 int main() {
     using namespace std::chrono;
-    int ncores = 1, pcores = 1e4;
-    cubacores(&ncores, &pcores);
+    // int ncores = 1, pcores = 1e4;
+    // cubacores(&ncores, &pcores);
 
     int comp, nregions, neval, fail;
     cubareal integral[NCOMP], error[NCOMP], prob[NCOMP];
-    std::ofstream outfile("garbage.dat", std::ios::out | std::ios::app);
+    std::ofstream outfile("convergence_full.dat",
+                          std::ios::out | std::ios::app);
     auto start = high_resolution_clock::now();
     T = 100;
     mH = sqrt(11. / 6.) * el / sW;
     mt = gs / sqrt(6.);
     mg = sqrt(2.) * gs;
-    warm_up_vegas(Integrand, 1e4, 20, 1, integral, error, prob);
-    gridded_vegas(Integrand, 1e6, 10, 1, integral, error, prob);
-    for (size_t i = 0; i < NCOMP; i++) {
-        outfile << 3. * integral[i] / (2. * SQR(M_PI) * M_PI * pow(T, 4)) *
-                       pow(2 * M_PI, 3)
-                << "\t" << error[i] << "\n";
+    int steps = 1;
+    for (size_t i = 1; i < 8; i++) {
+        steps *= 10;
+        warm_up_vegas(Integrand, steps, 20, -1, integral, error, prob);
+        gridded_vegas(Integrand, steps * 10, 10, 1, integral, error, prob);
+        for (size_t i = 0; i < NCOMP; i++) {
+            outfile << 3. / (2. * SQR(M_PI) * M_PI * pow(T, 4)) *
+                           pow(2 * M_PI, 3) * integral[i]
+                    << "\t"
+                    << 3. / (2. * SQR(M_PI) * M_PI * pow(T, 4)) *
+                           pow(2 * M_PI, 3) * error[i]
+                    << "\n";
+        }
     }
 
     auto stop = high_resolution_clock::now();

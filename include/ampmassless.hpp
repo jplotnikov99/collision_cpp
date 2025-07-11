@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <complex>
 #include <iostream>
 
 #include "constants.hpp"
@@ -9,16 +10,15 @@
 
 class CollisionIntM0 {
    private:
+    const std::complex<double> I = {0., 1.};
     const double mtinf = gs / sqrt(6.);
-    double cos12;
-    double cos13;
-    double cos23;
-    double pz31, pz32;
     double p1p2n, p1p3n, p2p3n;
+    double w, k;
+    std::complex<double> a, b;
 
    public:
     CollisionIntM0() {};
-    double lips(const double &p,const double &sth);
+    double lips(const double &p, const double &sth);
     double feq(const double &x, const double &s);
     double Pf(const double &E1, const double &E2, const double &E3,
               const double &E4);
