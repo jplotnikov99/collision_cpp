@@ -130,9 +130,16 @@ int main() {
     // int ncores = 1, pcores = 1e4;
     // cubacores(&ncores, &pcores);
 
+    /* T2 t1(10., 10.9);
+    std::cout << t1(0.3) << "\n";
+    std::cout << adap_gauss_kronrod_15(t1, 0., 1., 1e-8) << "\n";
+    t1.setre(false);
+    std::cout << adap_gauss_kronrod_15(t1, 0., 1., 1e-8) << "\n";
+    exit(1); */
+
     int comp, nregions, neval, fail;
     cubareal integral[NCOMP], error[NCOMP], prob[NCOMP];
-    std::ofstream outfile("convergence_full.dat",
+    std::ofstream outfile("TopYukawaRate_full.dat",
                           std::ios::out | std::ios::app);
     auto start = high_resolution_clock::now();
     T = 100;
@@ -140,7 +147,7 @@ int main() {
     mt = gs / sqrt(6.);
     mg = sqrt(2.) * gs;
     int steps = 1;
-    for (size_t i = 1; i < 8; i++) {
+    for (size_t i = 1; i < 6; i++) {
         steps *= 10;
         warm_up_vegas(Integrand, steps, 20, -1, integral, error, prob);
         gridded_vegas(Integrand, steps * 10, 10, 1, integral, error, prob);
