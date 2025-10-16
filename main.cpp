@@ -139,7 +139,7 @@ int main() {
     mt = gs / sqrt(6.);
     mg = sqrt(2.) * gs;
     int steps = 1;
-    for (size_t i = 1; i < 7; i++) {
+    for (size_t i = 1; i < 6; i++) {
         steps *= 10;
         warm_up_vegas(Integrand, steps, 20, -1, integral, error, prob);
         gridded_vegas(Integrand, steps * 10, 10, 1, integral, error, prob);

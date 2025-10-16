@@ -101,7 +101,7 @@ double CollisionIntM0::den(const double &p1, const double &p2, const double &p3,
     std::complex<double> a, b, den, num;
     switch (dentype) {
         case mass:
-            return (t - mtinf * mtinf);
+            return s * t / (t - mtinf * mtinf);
             break;
         case htl: {
             std::complex<double> logwk = std::log(std::abs((w + k) / (w - k)));

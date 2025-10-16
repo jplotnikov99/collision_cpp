@@ -47,7 +47,7 @@ class T2 {
 class CollisionIntM0 {
    private:
     enum DenType { mass, htl, full };
-    DenType dentype = htl;
+    DenType dentype = mass;
     const std::complex<double> I = {0., 1.};
     const double mtinf = gs / sqrt(6.);
     double p1p2n, p1p3n, p2p3n, epse;
