@@ -74,8 +74,8 @@ double mg = sqrt(2) * gs * T;
 
     return 0;
 } */
-static int Integrand(const int *ndim, const cubareal xx[], const int *ncomp,
-                     cubareal ff[], void *userdata) {
+static int Integrand(const int* ndim, const cubareal xx[], const int* ncomp,
+                     cubareal ff[], void* userdata) {
     CollisionIntM0 col;
     double p1 = (1 - xx[0]) / xx[0];
     double ph1 = xx[1] * 2 * M_PI;
@@ -125,6 +125,8 @@ void gridded_vegas(integrand_t integrand, int points, int iterations,
           STATEFILE, SPIN, &neval, &fail, integral, error, prob);
 }
 
+double myfunc(double x) { return exp(-SQR(x)); }
+
 int main() {
     using namespace std::chrono;
     // int ncores = 1, pcores = 1e4;
@@ -132,14 +134,14 @@ int main() {
 
     int comp, nregions, neval, fail;
     cubareal integral[NCOMP], error[NCOMP], prob[NCOMP];
-    std::ofstream outfile("test.dat", std::ios::out | std::ios::app);
+    std::ofstream outfile("new.dat", std::ios::out | std::ios::app);
     auto start = high_resolution_clock::now();
     T = 100;
     mH = sqrt(11. / 6.) * el / sW;
     mt = gs / sqrt(6.);
     mg = sqrt(2.) * gs;
     int steps = 1;
-    for (size_t i = 1; i < 6; i++) {
+    for (size_t i = 1; i < 5; i++) {
         steps *= 10;
         warm_up_vegas(Integrand, steps, 20, -1, integral, error, prob);
         gridded_vegas(Integrand, steps * 10, 10, 1, integral, error, prob);
